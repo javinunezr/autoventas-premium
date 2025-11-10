@@ -8,6 +8,8 @@ import QuienesSomos from './pages/QuienesSomos';
 import ComoComprar from './pages/ComoComprar';
 import AgregarVehiculo from './pages/AgregarVehiculo';
 import Inventario from './pages/Inventario';
+import VehicleDetail from './pages/VehicleDetail';
+import PossiblePurchases from './pages/PossiblePurchases';
 import './App.css';
 
 /**
@@ -40,6 +42,12 @@ function App() {
             
             {/* Ruta del inventario completo con búsqueda y filtros */}
             <Route path="/inventario" element={<Inventario />} />
+            
+            {/* Ruta para el detalle de un vehículo específico */}
+            <Route path="/vehiculo/:id" element={<VehicleDetail />} />
+            
+            {/* Ruta para vehículos marcados como posible compra */}
+            <Route path="/posibles-compras" element={<PossiblePurchases />} />
           </Routes>
         </main>
         

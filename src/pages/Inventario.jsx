@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useVehicles } from '../context/VehicleContext';
 
 /**
@@ -8,19 +9,31 @@ import { useVehicles } from '../context/VehicleContext';
 const Inventario = () => {
   // Obtener vehículos y función de eliminar
   const { vehicles, deleteVehicle } = useVehicles();
+  const navigate = useNavigate(); // Hook para navegación programática
   
   // Estados locales para manejar los filtros y búsqueda
   const [searchTerm, setSearchTerm] = useState('');     // Término de búsqueda del usuario (marca, modelo, año, etc)
   const [sortBy, setSortBy] = useState('marca');        // Ordenar por marca
   const [sortOrder, setSortOrder] = useState('asc');    // Orden ascendente o descendente
+  const [filterCategoria, setFilterCategoria] = useState(''); // Filtro por categoría de vehículo
+  const [filterTransmision, setFilterTransmision] = useState(''); // Filtro por tipo de transmisión
 
-  // Filtrar vehículos basado en el término de búsqueda del usuario
-  // Busca en marca, modelo y año de fabricación
-  const filteredVehicles = vehicles.filter(vehicle =>
-    vehicle.marca.toLowerCase().includes(searchTerm.toLowerCase()) ||     // Buscar en marca (sin distinguir mayúsculas)
-    vehicle.modelo.toLowerCase().includes(searchTerm.toLowerCase()) ||    // Buscar en modelo (sin distinguir mayúsculas)
-    vehicle.año.toString().includes(searchTerm)                          // Buscar en año (convertido a string)
-  );
+  // Filtrar vehículos basado en el término de búsqueda del usuario y filtros adicionales
+  // Busca en marca, modelo y año de fabricación, y filtra por categoría y transmisión
+  const filteredVehicles = vehicles.filter(vehicle => {
+    // Filtro de texto (marca, modelo, año)
+    const matchesSearch = vehicle.marca.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         vehicle.modelo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         vehicle.año.toString().includes(searchTerm);
+    
+    // Filtro por categoría (verificar que la propiedad existe)
+    const matchesCategoria = !filterCategoria || (vehicle.categoria && vehicle.categoria === filterCategoria);
+    
+    // Filtro por transmisión (verificar que la propiedad existe)
+    const matchesTransmision = !filterTransmision || (vehicle.transmision && vehicle.transmision === filterTransmision);
+    
+    return matchesSearch && matchesCategoria && matchesTransmision;
+  });
 
   // Ordenar los vehículos filtrados según los criterios seleccionados
   const sortedVehicles = [...filteredVehicles].sort((a, b) => {
@@ -40,6 +53,15 @@ const Inventario = () => {
       return valueA > valueB ? -1 : valueA < valueB ? 1 : 0;  // Orden descendente Z-A, 9-1
     }
   });
+
+  /**
+   * Función para limpiar todos los filtros
+   */
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setFilterCategoria('');
+    setFilterTransmision('');
+  };
 
   /**
    * Función para manejar la eliminación de vehículos
@@ -70,24 +92,32 @@ const Inventario = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Inventario de Vehículos</h1>
-          <p className="text-gray-600">Encuentra todos los vehículos disponibles en el inventario</p>
+    <div className="home-container">
+      {/* Hero Section - Estilo consistente con Home */}
+      <section className="hero">
+        <div className="hero-content">
+          <h1 className="hero-title">Inventario Completo</h1>
+          <p className="hero-subtitle">Encuentra el vehículo perfecto entre nuestra amplia selección</p>
+          <p className="hero-description">
+            Explora todos nuestros vehículos disponibles con herramientas avanzadas de búsqueda y filtrado
+          </p>
         </div>
+      </section>
+
+      <div className="py-8">
+        <div className="max-w-7xl mx-auto px-4">
 
         {/* Controles de búsqueda y filtrado */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Filtros de Búsqueda</h2>
+        <div className="bg-white rounded-lg shadow-md p-4 mb-6 max-w-6xl">
+          <div className="mb-3">
+            <h2 className="text-lg font-semibold text-gray-900">Filtros de Búsqueda</h2>
           </div>
           
-          <div className="flex flex-col lg:flex-row gap-6">
+          {/* Fila única: Búsqueda y todos los filtros */}
+          <div className="flex flex-col lg:flex-row gap-4 items-start mb-4">
             {/* Búsqueda */}
-            <div className="flex-1">
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-3">
+            <div className="flex-1 max-w-md">
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
                 🔍 Buscar vehículos
               </label>
               <div className="relative">
@@ -96,7 +126,7 @@ const Inventario = () => {
                   id="search"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-gray-900 placeholder-gray-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-gray-900 placeholder-gray-500"
                   placeholder="Buscar por marca, modelo o año..."
                 />
                 {searchTerm && (
@@ -110,18 +140,60 @@ const Inventario = () => {
               </div>
             </div>
 
-            {/* Filtros */}
-            <div className="flex flex-col sm:flex-row gap-4 lg:gap-6">
+            {/* Todos los filtros en línea horizontal */}
+            <div className="flex flex-wrap gap-8">
+              {/* Filtro por categoría */}
+              <div className="w-40">
+                <label htmlFor="filterCategoria" className="block text-sm font-medium text-gray-700 mb-1">
+                  🏷️ Categoría
+                </label>
+                <select
+                  id="filterCategoria"
+                  value={filterCategoria}
+                  onChange={(e) => setFilterCategoria(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white text-gray-900"
+                >
+                  <option value="">Todas</option>
+                  <option value="Sedán">Sedán</option>
+                  <option value="Hatchback">Hatchback</option>
+                  <option value="SUV">SUV</option>
+                  <option value="Crossover">Crossover</option>
+                  <option value="Pickup">Pickup</option>
+                  <option value="Coupé">Coupé</option>
+                  <option value="Convertible">Convertible</option>
+                  <option value="Station Wagon">Station Wagon</option>
+                </select>
+              </div>
+
+              {/* Filtro por transmisión */}
+              <div className="w-40">
+                <label htmlFor="filterTransmision" className="block text-sm font-medium text-gray-700 mb-1">
+                  ⚙️ Transmisión
+                </label>
+                <select
+                  id="filterTransmision"
+                  value={filterTransmision}
+                  onChange={(e) => setFilterTransmision(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white text-gray-900"
+                >
+                  <option value="">Todas</option>
+                  <option value="Manual">Manual</option>
+                  <option value="Automática">Automática</option>
+                  <option value="CVT">CVT</option>
+                  <option value="Semi-automática">Semi-automática</option>
+                </select>
+              </div>
+
               {/* Ordenar por */}
-              <div className="min-w-[200px]">
-                <label htmlFor="sortBy" className="block text-sm font-medium text-gray-700 mb-3">
+              <div className="w-36">
+                <label htmlFor="sortBy" className="block text-sm font-medium text-gray-700 mb-1">
                   📊 Ordenar por
                 </label>
                 <select
                   id="sortBy"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white text-gray-900"
                 >
                   <option value="marca">🏢 Marca</option>
                   <option value="modelo">🚗 Modelo</option>
@@ -131,15 +203,15 @@ const Inventario = () => {
               </div>
 
               {/* Orden */}
-              <div className="min-w-[150px]">
-                <label htmlFor="sortOrder" className="block text-sm font-medium text-gray-700 mb-3">
+              <div className="w-32">
+                <label htmlFor="sortOrder" className="block text-sm font-medium text-gray-700 mb-1">
                   🔄 Orden
                 </label>
                 <select
                   id="sortOrder"
                   value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white text-gray-900"
                 >
                   <option value="asc">↗️ Ascendente</option>
                   <option value="desc">↘️ Descendente</option>
@@ -149,27 +221,52 @@ const Inventario = () => {
           </div>
 
           {/* Estadísticas de resultados */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-4 text-sm text-gray-600">
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3 text-sm text-gray-600">
                 <span className="inline-flex items-center gap-1">
                   📋 <strong>{vehicles.length}</strong> vehículos totales
                 </span>
-                {searchTerm && (
+                {(searchTerm || filterCategoria || filterTransmision) && (
                   <span className="inline-flex items-center gap-1">
                     🔍 <strong>{sortedVehicles.length}</strong> resultados encontrados
                   </span>
                 )}
               </div>
               
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition duration-200"
-                >
-                  🗑️ Limpiar filtros
-                </button>
-              )}
+              {/* Filtros activos */}
+              <div className="flex flex-wrap items-center gap-2">
+                {filterCategoria && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
+                    🏷️ {filterCategoria}
+                    <button 
+                      onClick={() => setFilterCategoria('')}
+                      className="ml-1 text-blue-600 hover:text-blue-900"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {filterTransmision && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-md">
+                    ⚙️ {filterTransmision}
+                    <button 
+                      onClick={() => setFilterTransmision('')}
+                      className="ml-1 text-purple-600 hover:text-purple-900"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {(searchTerm || filterCategoria || filterTransmision) && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="inline-flex items-center gap-2 px-3 py-1 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition duration-200"
+                  >
+                    🗑️ Limpiar todos los filtros
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -178,8 +275,26 @@ const Inventario = () => {
         <section className="featured-vehicles">
           <div className="vehicles-grid">
             {sortedVehicles.length === 0 ? (
-              <div className="col-span-full text-center py-8 text-gray-500">
-                {searchTerm ? 'No se encontraron vehículos que coincidan con la búsqueda' : 'No hay vehículos en el inventario'}
+              <div className="col-span-full w-full flex flex-col items-center justify-center min-h-[400px] text-gray-500">
+                <div className="flex flex-col items-center justify-center text-center">
+                  <div className="text-6xl mb-4">🚗</div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {(searchTerm || filterCategoria || filterTransmision) ? 'No hay resultados' : 'Inventario vacío'}
+                  </h3>
+                  <p className="text-gray-600 mb-4 max-w-md">
+                    {(searchTerm || filterCategoria || filterTransmision)
+                      ? 'No se encontraron vehículos que coincidan con los filtros seleccionados' 
+                      : 'Aún no hay vehículos registrados en el inventario'}
+                  </p>
+                  {(searchTerm || filterCategoria || filterTransmision) && (
+                    <button
+                      onClick={clearAllFilters}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+                    >
+                      🗑️ Limpiar filtros
+                    </button>
+                  )}
+                </div>
               </div>
             ) : (
               sortedVehicles.map((vehicle) => (
@@ -192,18 +307,28 @@ const Inventario = () => {
                         e.target.src = '/images/default-car.svg';
                       }}
                     />
+                    {/* Badge del año */}
+                    <div className="absolute top-3 right-3 bg-white px-2 py-1 rounded-md shadow-md">
+                      <span className="text-xs font-medium text-gray-600">{vehicle.año}</span>
+                    </div>
                   </div>
                   <div className="vehicle-info">
                     <h3>{vehicle.marca} {vehicle.modelo} {vehicle.año}</h3>
                     <p className="price">{formatPrice(vehicle.precio)}</p>
+                    
                     <p className="description">{vehicle.descripcion || 'Sin descripción disponible'}</p>
                     <div className="flex gap-2 mt-4">
-                      <button className="btn-secondary flex-1">Ver Detalles</button>
+                      <button 
+                        onClick={() => navigate(`/vehiculo/${vehicle.id}`)}
+                        className="btn-secondary flex-1"
+                      >
+                        Ver Detalles
+                      </button>
                       <button
                         onClick={() => handleDelete(vehicle.id, vehicle.marca, vehicle.modelo)}
                         className="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-3 py-2 rounded-md transition duration-200"
                       >
-                        Eliminar
+                        🗑️
                       </button>
                     </div>
                   </div>
@@ -218,10 +343,13 @@ const Inventario = () => {
           <div className="bg-white rounded-lg shadow-md p-4 mt-6">
             <p className="text-sm text-gray-600 text-center">
               Mostrando {sortedVehicles.length} de {vehicles.length} vehículos
-              {searchTerm && ` • Filtrado por: "${searchTerm}"`}
+              {searchTerm && ` • Búsqueda: "${searchTerm}"`}
+              {filterCategoria && ` • Categoría: ${filterCategoria}`}
+              {filterTransmision && ` • Transmisión: ${filterTransmision}`}
             </p>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

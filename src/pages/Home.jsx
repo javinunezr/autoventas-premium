@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useVehicles } from '../context/VehicleContext';
 
 /**
@@ -8,6 +9,7 @@ import { useVehicles } from '../context/VehicleContext';
 const Home = () => {
   // Obtener la lista de vehículos del contexto global
   const { vehicles } = useVehicles();
+  const navigate = useNavigate(); // Hook para navegación programática
   
   // Mostrar solo los primeros 3 vehículos como destacados en la página principal
   const featuredVehicles = vehicles.slice(0, 3);
@@ -35,7 +37,12 @@ const Home = () => {
           <p className="hero-description">
             Encuentra el auto de tus sueños en nuestra amplia selección de vehículos nuevos y usados
           </p>
-          <button className="cta-button">Ver Catálogo</button>
+          <button 
+            onClick={() => navigate('/inventario')}
+            className="cta-button"
+          >
+            Ver Catálogo
+          </button>
         </div>
       </section>
 
@@ -53,12 +60,41 @@ const Home = () => {
                     e.target.src = '/images/default-car.svg';
                   }}
                 />
+                {/* Badge de destacado */}
+                <div className="absolute top-3 right-3 bg-yellow-500 text-white px-2 py-1 rounded-md shadow-md">
+                  <span className="text-xs font-medium">⭐ Destacado</span>
+                </div>
+                <div className="absolute top-3 left-3 bg-white px-2 py-1 rounded-md shadow-md">
+                  <span className="text-xs font-medium text-gray-600">{vehicle.año}</span>
+                </div>
               </div>
               <div className="vehicle-info">
                 <h3>{vehicle.marca} {vehicle.modelo} {vehicle.año}</h3>
                 <p className="price">{formatPrice(vehicle.precio)}</p>
+                
+                {/* Información adicional */}
+                <div className="space-y-1 mb-3 text-sm text-gray-600">
+                  {vehicle.categoria && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-blue-500">🚗</span>
+                      <span>{vehicle.categoria}</span>
+                    </div>
+                  )}
+                  {vehicle.transmision && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-purple-500">⚙️</span>
+                      <span>{vehicle.transmision}</span>
+                    </div>
+                  )}
+                </div>
+                
                 <p className="description">{vehicle.descripcion}</p>
-                <button className="btn-secondary">Ver Detalles</button>
+                <button 
+                  onClick={() => navigate(`/vehiculo/${vehicle.id}`)}
+                  className="btn-secondary"
+                >
+                  Ver Detalles
+                </button>
               </div>
             </div>
           ))}
@@ -69,7 +105,12 @@ const Home = () => {
             <p className="text-gray-600 mb-4">
               Mostrando {featuredVehicles.length} de {vehicles.length} vehículos disponibles
             </p>
-            <button className="btn-outline">Ver Todos los Vehículos</button>
+            <button 
+              onClick={() => navigate('/inventario')}
+              className="btn-outline"
+            >
+              Ver Todos los Vehículos
+            </button>
           </div>
         )}
       </section>

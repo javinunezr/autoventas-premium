@@ -27,13 +27,22 @@ const Navigation = () => {
         <span className="nav-label">Inventario</span>
       </NavLink>
       
+      {/* Enlace a vehículos marcados como posible compra */}
+      <NavLink 
+        to="/posibles-compras" 
+        className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
+      >
+        <div className="nav-icon">⭐</div>
+        <span className="nav-label">Posible compra</span>
+      </NavLink>
+      
       {/* Enlace al formulario para agregar nuevos vehículos */}
       <NavLink 
         to="/agregar-vehiculo" 
         className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
       >
         <div className="nav-icon">➕</div>
-        <span className="nav-label">Agregar</span>
+        <span className="nav-label">Agregar Vehículo</span>
       </NavLink>
       
       {/* Enlace a la información de la empresa */}
@@ -43,15 +52,6 @@ const Navigation = () => {
       >
         <div className="nav-icon">👥</div>
         <span className="nav-label">Nosotros</span>
-      </NavLink>
-      
-      {/* Enlace a la guía de proceso de compra */}
-      <NavLink 
-        to="/como-comprar" 
-        className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
-      >
-        <div className="nav-icon">🛒</div>
-        <span className="nav-label">Comprar</span>
       </NavLink>
     </nav>
   );

@@ -3,8 +3,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Importar fuente de Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* Configuración base con Tailwind */
+@layer base {
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+  
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
 
 /* Reset y configuración global */
 *,
@@ -84,4 +90,20 @@ a {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* Utilidad para truncar texto en 2 líneas */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Utilidad para truncar texto en 3 líneas */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

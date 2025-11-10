@@ -262,6 +262,7 @@ body {
 .vehicle-image {
   height: 200px;
   overflow: hidden;
+  position: relative;
 }
 
 .vehicle-image img {
